@@ -7,9 +7,10 @@ import jwt from "jsonwebtoken";
 import { ProductModel } from "./models/Product.js";
 import { UserModel } from "./models/User.js";
 import { HotelModel } from "./models/Hotel.js";
-import { AddtoCart, CartData, OrderProduct, OrderView, deleteProductById, updateProductById } from "./Controllers/AdminCon.js";
+import { OrderProduct, OrderView, deleteProductById, updateProductById } from "./Controllers/AdminCon.js";
 import { GettingKey, PaymentData, PaymentVerify } from "./Controllers/PaymentController.js";
 import Razorpay from 'razorpay';
+import { addToCart, decrementCartQuantity, getAll, getById, incrementCartQuantity, listCartByUser, removeCartQuantity } from "./Controllers/CartController.js";
 
 
 const razorpay = new Razorpay({
@@ -372,11 +373,25 @@ app.delete('/deleteproduct/:id',deleteProductById)
 app.put('/update/:id',updateProductById)
 app.post('/order/:id',OrderProduct)
 app.get('/vieworderproduct',OrderView)
-app.post('/addtocart',AddtoCart)
-app.get('/api/cartdata',CartData)
+
+
+// Payment Controller
+
 app.post('/checkout', PaymentData )
 app.post('/paymentverification', PaymentVerify)
 app.get('/api/getkey', GettingKey)
+
+// For Cart
+
+app.post('/addToCart', addToCart);
+app.get('/listCart/:id', listCartByUser);
+app.get('/:id', getById);
+app.get('/viewAll', getAll);
+app.get('/decrement-cart/:userId/:productId', decrementCartQuantity);
+app.get('/remove-cart/:userId/:productId', removeCartQuantity);
+app.post('/increment-cart/:userId/:productId', incrementCartQuantity);
+
+
 
 app.listen(8080, () => {
   mongooseConnection();
