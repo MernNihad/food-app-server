@@ -9,8 +9,8 @@ export const addToCart = async (req, res) => {
 
         // Check if the product already exists in the user's cart
         const isExistProduct = await Cart.findOne({
-            productId: req.body.productId,
-            userId:req.body.userId
+            productId: new mongoose.Types.ObjectId(req.body.productId),
+            userId:new mongoose.Types.ObjectId(req.body.userId)
         });
 
         // If the product exists in the cart, increment its quantity
@@ -28,6 +28,34 @@ export const addToCart = async (req, res) => {
                 return res.status(201).json({ result: saveData, message: "Successfully inserted cart into db" });
             }
         }
+    } catch (error) {
+        // Return error message if any error occurs
+        return res.status(404).json({ message: error.message || 'error' });
+    }
+};
+export const decrementCart = async (req, res) => {
+    try {
+
+        const isExistProduct = await Cart.findOne({
+            productId: new mongoose.Types.ObjectId(req.body.productId),
+            userId:new mongoose.Types.ObjectId(req.body.userId)
+        });
+
+        // If the product exists in the cart, increment its quantity
+        if (isExistProduct) {
+            const copy = { ...isExistProduct._doc };
+            if(copy.quantity === 1){
+             const saveData = await Cart.findByIdAndDelete(isExistProduct._id);
+             return res.status(201).json({ result: saveData, message: "remove from cart" });
+            }else{
+
+                copy.quantity = copy.quantity - 1;
+                const saveData = await Cart.findByIdAndUpdate(isExistProduct._id, { $set: copy }, { new: true });
+                return res.status(201).json({ result: saveData, message: "Decrement" });
+            }
+        } 
+        // If the product does not exist in the cart, create a new cart item
+        
     } catch (error) {
         // Return error message if any error occurs
         return res.status(404).json({ message: error.message || 'error' });
@@ -79,7 +107,7 @@ export const listCartByUser = async (req, res) => {
 
 
     if(cart.length === 0) {
-        return res.status(404).json("no entries yet");
+        return res.status(200).json("no entries yet");
     } else {
         return res.status(200).json({ data: cart });
     }
